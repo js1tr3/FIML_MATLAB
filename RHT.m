@@ -35,7 +35,7 @@ function [obj, sens, features, beta] = RHT(T_inf, nPoints, dt, nIter,...
         res(1)       = -T(1);
         res(end)     = -T(end);
         res(2:end-1) = (T(1:end-2) - 2*T(2:end-1) + T(3:end))/dy2 +...
-                       5E-4*beta(2:end-1).*(T_inf^4 - T(2:end-1).^4);
+                       5E-4*beta(2:end-1).*(T_inf^4 - T(2:end-1).^4); % -mcp*dT/dt
                    
         [jacT, jacbeta] = setJacobian(T, T_inf, beta, dy2);
         
@@ -51,8 +51,9 @@ function [obj, sens, features, beta] = RHT(T_inf, nPoints, dt, nIter,...
     
     end
     
-    plot(y, T, 'b');
+    plot(y, T, 'b--');
     hold on
+    
     
     obj  = 0;
     sens = [];
@@ -64,14 +65,15 @@ function [obj, sens, features, beta] = RHT(T_inf, nPoints, dt, nIter,...
     %===================================================================
     if ~isempty(data)
         psi  = (jacT.')\(2.0*(T - data)/size(T,1));
-        sens = -(jacbeta.')*psi;
+        sens = -(jacbeta.')*psi;  %dj/dbeta
         obj  = sum((T - data).^2 / size(T,1));
         plot(y, data, 'r')
     end
     %===================================================================
     
     hold off
-
+    legend('Prediction','Data')
+    drawnow
 end
 
 function [jacT, jacbeta] = setJacobian(T, T_inf, beta, dy2)
